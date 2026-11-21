@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 public class HostedCheckoutAdapter implements PaymentProviderAdapter {
   private final String checkoutBaseUrl;
 
-  public HostedCheckoutAdapter(@Value("${tantepay.checkout.base-url:http://localhost:8085/checkout}") String checkoutBaseUrl) {
+  public HostedCheckoutAdapter(@Value("${tantepay.checkout.base-url:http://localhost:4179/pay}") String checkoutBaseUrl) {
     this.checkoutBaseUrl = checkoutBaseUrl;
   }
 
@@ -23,17 +23,10 @@ public class HostedCheckoutAdapter implements PaymentProviderAdapter {
 
   @Override
   public String buildRedirectUrl(PaymentIntent intent) {
-    StringBuilder url = new StringBuilder(checkoutBaseUrl)
-      .append("?reference=").append(encode(intent.getReference()))
-      .append("&provider=").append(intent.getProvider().name())
-      .append("&amount=").append(intent.getAmount().toPlainString())
-      .append("&currency=").append(encode(intent.getCurrency()));
-
-    if (intent.getReturnUrl() != null) {
-      url.append("&returnUrl=").append(encode(intent.getReturnUrl()));
-    }
-
-    return url.toString();
+    String normalizedBase = checkoutBaseUrl.endsWith("/")
+      ? checkoutBaseUrl.substring(0, checkoutBaseUrl.length() - 1)
+      : checkoutBaseUrl;
+    return normalizedBase + "/" + encode(intent.getReference());
   }
 
   private String encode(String value) {

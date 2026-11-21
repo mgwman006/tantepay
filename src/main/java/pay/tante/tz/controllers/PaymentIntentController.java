@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pay.tante.tz.models.dtos.ApiResponse;
+import pay.tante.tz.models.dtos.requests.CreateGenericPaymentIntentDTO;
 import pay.tante.tz.models.dtos.requests.CreatePaymentIntentDTO;
 import pay.tante.tz.models.dtos.requests.PaymentCallbackDTO;
+import pay.tante.tz.models.dtos.requests.SelectPaymentProviderDTO;
 import pay.tante.tz.models.dtos.responses.PaymentIntentDetailsDTO;
 import pay.tante.tz.services.PaymentIntentService;
 
@@ -16,6 +18,13 @@ import pay.tante.tz.services.PaymentIntentService;
 @AllArgsConstructor
 public class PaymentIntentController {
   private final PaymentIntentService paymentIntentService;
+
+  @PostMapping("/intents")
+  public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> createPaymentIntent(@Valid @RequestBody CreateGenericPaymentIntentDTO request) {
+    PaymentIntentDetailsDTO response = paymentIntentService.createPaymentIntent(request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+      .body(ApiResponse.success(response, HttpStatus.CREATED.value()));
+  }
 
   @PostMapping("/viewings")
   public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> payForViewingBooking(@Valid @RequestBody CreatePaymentIntentDTO request) {
@@ -27,6 +36,23 @@ public class PaymentIntentController {
   @GetMapping("/intents/{reference}")
   public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> getPaymentIntent(@PathVariable String reference) {
     PaymentIntentDetailsDTO response = paymentIntentService.getIntent(reference);
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(ApiResponse.success(response, HttpStatus.OK.value()));
+  }
+
+  @PostMapping("/intents/{reference}/pay/virtual-account")
+  public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> payWithVirtualAccount(@PathVariable String reference) {
+    PaymentIntentDetailsDTO response = paymentIntentService.payWithVirtualAccount(reference);
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(ApiResponse.success(response, HttpStatus.OK.value()));
+  }
+
+  @PostMapping("/intents/{reference}/pay/provider")
+  public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> selectPaymentProvider(
+    @PathVariable String reference,
+    @Valid @RequestBody SelectPaymentProviderDTO request
+  ) {
+    PaymentIntentDetailsDTO response = paymentIntentService.selectPaymentProvider(reference, request);
     return ResponseEntity.status(HttpStatus.OK)
       .body(ApiResponse.success(response, HttpStatus.OK.value()));
   }

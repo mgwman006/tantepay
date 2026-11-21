@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pay.tante.tz.enums.PaymentIntentStatus;
-import pay.tante.tz.enums.PaymentProvider;
-import pay.tante.tz.enums.PaymentPurpose;
 
+import pay.tante.tz.enums.TanteService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -27,57 +25,22 @@ import java.time.LocalDateTime;
   }
 )
 public class PaymentIntent extends BaseEntity {
-  @Column(nullable = false, unique = true, length = 100)
-  private String reference;
 
-  @Column(name = "booking_reference", length = 60)
-  private String bookingReference;
+  Long userAccountId;
 
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+  TanteService service;
 
-  @Column(nullable = false, precision = 12, scale = 2)
+  private String serviceReferenceNumber;
+
   private BigDecimal amount;
 
   @Column(nullable = false, length = 3)
   private String currency = "TZS";
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 30)
-  private PaymentProvider provider;
+  private String statusCallbackUrl;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 30)
-  private PaymentPurpose purpose;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20)
-  private PaymentIntentStatus status = PaymentIntentStatus.PENDING;
-
-  @Column(name = "redirect_url", length = 500)
-  private String redirectUrl;
-
-  @Column(name = "return_url", length = 500)
-  private String returnUrl;
-
-  @Column(name = "callback_url", length = 500)
-  private String callbackUrl;
-
-  @Column(name = "provider_transaction_id", length = 100)
-  private String providerTransactionId;
-
-  @Column(name = "failure_reason", length = 255)
-  private String failureReason;
-
-  @Column(name = "expires_at")
-  private LocalDateTime expiresAt;
-
-  @Column(name = "settled_at")
-  private LocalDateTime settledAt;
-
-  @Column(name = "refunded", nullable = false)
-  private boolean refunded = false;
-
-  @Column(name = "refunded_at")
-  private LocalDateTime refundedAt;
+  boolean refunded;
+  LocalDateTime createdAt;
+  LocalDateTime expiresAt;
+  LocalDateTime settledAt;
 }

@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 )
 public class VirtualAccount extends BaseEntity {
   @Column(name = "user_id", nullable = false)
-  private Long userId;
+  private Long userAccountId;
 
   @Column(nullable = false, precision = 12, scale = 2)
   private BigDecimal balance = BigDecimal.ZERO;

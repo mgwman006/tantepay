@@ -1,6 +1,5 @@
 package pay.tante.tz.models.dtos.responses;
 
-import pay.tante.tz.enums.PaymentIntentStatus;
 import pay.tante.tz.enums.PaymentProvider;
 import pay.tante.tz.enums.PaymentPurpose;
 

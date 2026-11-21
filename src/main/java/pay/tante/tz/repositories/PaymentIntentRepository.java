@@ -2,7 +2,6 @@ package pay.tante.tz.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import pay.tante.tz.enums.PaymentIntentStatus;
 import pay.tante.tz.models.entities.PaymentIntent;
 
 import java.time.LocalDateTime;

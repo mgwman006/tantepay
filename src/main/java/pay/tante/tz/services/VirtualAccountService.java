@@ -11,7 +11,6 @@ import pay.tante.tz.models.dtos.requests.VirtualAccountTransactionDTO;
 import pay.tante.tz.models.dtos.responses.VirtualAccountDetailsDTO;
 import pay.tante.tz.models.dtos.responses.VirtualAccountEntryDetailsDTO;
 import pay.tante.tz.models.entities.VirtualAccount;
-import pay.tante.tz.models.entities.VirtualAccountEntry;
 import pay.tante.tz.repositories.VirtualAccountEntryRepository;
 import pay.tante.tz.repositories.VirtualAccountRepository;
 
