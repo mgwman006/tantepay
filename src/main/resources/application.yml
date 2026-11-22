@@ -12,11 +12,27 @@ spring:
     properties:
       hibernate:
         dialect: "org.hibernate.dialect.MySQLDialect"
+  
+  # Springdoc / OpenAPI Configuration
+  swagger-ui:
+    path: "/swagger-ui.html"
+    enabled: "true"
+  
+springdoc:
+  api-docs:
+    path: "/v3/api-docs"
+  swagger-ui:
+    path: "/swagger-ui.html"
+    enabled: "true"
+    operationsSorter: "method"
+
 server:
   port: "${SERVER_PORT:8085}"
+
 tante:
     pay:
         url: "${TANTE_PAY_URL:http://localhost:8085}"
+
 rent:
   manager:
     base:

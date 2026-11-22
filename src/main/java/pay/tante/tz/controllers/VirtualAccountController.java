@@ -19,9 +19,9 @@ import java.util.List;
 public class VirtualAccountController {
   private final VirtualAccountService virtualAccountService;
 
-  @PostMapping("/{userId}")
-  public ResponseEntity<ApiResponse<VirtualAccountDetailsDTO>> createVirtualAccount(@PathVariable Long userId) {
-    VirtualAccountDetailsDTO response = virtualAccountService.getOrCreateAccount(userId);
+  @PostMapping("/{userAccountId}")
+  public ResponseEntity<ApiResponse<VirtualAccountDetailsDTO>> createVirtualAccount(@PathVariable Long userAccountId) {
+    VirtualAccountDetailsDTO response = virtualAccountService.getOrCreateAccount(userAccountId);
     return ResponseEntity.status(HttpStatus.CREATED)
       .body(ApiResponse.success(response, HttpStatus.CREATED.value()));
   }
@@ -33,7 +33,7 @@ public class VirtualAccountController {
       .body(ApiResponse.success(response, HttpStatus.OK.value()));
   }
 
-  @GetMapping("/{userId}/entries")
+  @GetMapping("/{userAccountId}/entries")
   public ResponseEntity<ApiResponse<List<VirtualAccountEntryDetailsDTO>>> getVirtualAccountEntries(@PathVariable Long userId) {
     List<VirtualAccountEntryDetailsDTO> response = virtualAccountService.getEntries(userId);
     return ResponseEntity.status(HttpStatus.OK)

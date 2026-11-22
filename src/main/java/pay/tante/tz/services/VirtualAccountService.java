@@ -27,8 +27,10 @@ public class VirtualAccountService {
   private final VirtualAccountEntryRepository virtualAccountEntryRepository;
 
   @Transactional
-  public VirtualAccountDetailsDTO getOrCreateAccount(Long userAccountId) {
-    if (userAccountId == null) {
+  public VirtualAccountDetailsDTO getOrCreateAccount(Long userAccountId)
+  {
+    if (userAccountId == null)
+    {
       throw new TantePayException("User ID is required to resolve a virtual account.");
     }
 
