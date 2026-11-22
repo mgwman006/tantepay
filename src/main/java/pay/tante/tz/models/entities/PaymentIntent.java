@@ -35,7 +35,7 @@ public class PaymentIntent extends BaseEntity {
   private String currency = "TZS";
 
   @Column(nullable = false)
-  private String statusCallbackUrl;
+  private String callbackUrl;
 
   @Column(nullable = false)
   private String paymentLink;

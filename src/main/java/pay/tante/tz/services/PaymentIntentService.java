@@ -63,7 +63,7 @@ public class PaymentIntentService {
     intent.setServiceReferenceNumber(request.serviceReferenceNumber());
     intent.setAmount(request.amount());
     intent.setCurrency(request.currency());
-    intent.setStatusCallbackUrl(request.statusCallbackUrl());
+    intent.setCallbackUrl(request.callbackUrl());
     intent.setPaymentLink(generatePaymentLink(request.serviceReferenceNumber()));
     intent.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
     intent.setExpiresAt(intent.getCreatedAt().plusMinutes(DEFAULT_EXPIRY_MINUTES));
@@ -91,13 +91,13 @@ public class PaymentIntentService {
 
   private void notifyCallingService(PaymentIntent intent, String paymentStatus, String reason)
   {
-    if (StringUtils.hasText(intent.getStatusCallbackUrl()))
+    if (StringUtils.hasText(intent.getCallbackUrl()))
     {
       try
       {
         RestClient.create()
           .post()
-          .uri(intent.getStatusCallbackUrl())
+          .uri(intent.getCallbackUrl())
           .body(Map.of(
             "reference", intent.getServiceReferenceNumber(),
             "paymentStatus", paymentStatus,
@@ -112,7 +112,7 @@ public class PaymentIntentService {
 
     if (intent.getService() == TanteService.VIEWING_BOOKING )
     {
-      rentManagerClient.updateViewingPaymentStatus(intent.getStatusCallbackUrl(), paymentStatus, reason);
+      rentManagerClient.updateViewingPaymentStatus(intent.getCallbackUrl(), paymentStatus, reason);
     }
   }
 
@@ -136,7 +136,7 @@ public class PaymentIntentService {
       intent.getServiceReferenceNumber(),
       intent.getAmount(),
       intent.getCurrency(),
-      intent.getStatusCallbackUrl(),
+      intent.getCallbackUrl(),
       intent.getPaymentLink(),
       intent.getStatus(),
       intent.getCreatedAt(),

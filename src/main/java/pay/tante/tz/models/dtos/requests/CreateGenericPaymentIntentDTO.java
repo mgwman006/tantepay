@@ -25,6 +25,6 @@ public record CreateGenericPaymentIntentDTO(
   String serviceReferenceNumber,
 
   @NotBlank(message = "Status Callback URL is required")
-  String statusCallbackUrl
+  String callbackUrl
 ) {
 }
