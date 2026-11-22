@@ -1,0 +1,85 @@
+name: Prod Environment - Deploy Tantepay
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: PROD
+
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.TANTEPAY_SERVER_DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.TANTEPAY_SERVER_DB_PASSWORD }}
+      RENT_MANAGER_BASE_URL: ${{ secrets.RENT_MANAGER_BASE_URL }}
+      SERVER_PORT: 8085
+      TANTE_PAY_URL: ${{ secrets.TANTE_PAY_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker (local build only)
+        run: echo "Building Docker image..."
+
+      - name: Build Docker image
+        run: docker buildx build --platform linux/amd64 -t tantepay:prod --load .
+
+      - name: Save Docker image as tar
+        run: docker save tantepay:prod | gzip > tantepay.tar.gz
+
+      - name: Copy image to EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.TANTEPAY_SERVER_HOST_IP }}
+          username: ${{ secrets.TANTEPAY_SERVER_USER }}
+          key: ${{ secrets.TANTEPAY_SERVER_PRIVATE_KEY }}
+          source: "tantepay.tar.gz"
+          target: "/home/ubuntu/tantepay"
+
+      - name: Deploy on EC2
+        run: |
+          echo "${{ secrets.TANTEPAY_SERVER_PRIVATE_KEY }}" > private_key
+          chmod 600 private_key
+
+          ssh -o StrictHostKeyChecking=no -i private_key \
+          ${{ secrets.TANTEPAY_SERVER_USER }}@${{ secrets.TANTEPAY_SERVER_HOST_IP }} \
+          "DB_URL='${{ secrets.DB_URL }}' \
+           DB_USERNAME='${{ secrets.TANTEPAY_SERVER_DB_USERNAME }}' \
+           DB_PASSWORD='${{ secrets.TANTEPAY_SERVER_DB_PASSWORD }}' \
+           RENT_MANAGER_BASE_URL='${{ secrets.RENT_MANAGER_BASE_URL }}' \
+           TANTE_PAY_URL='${{ secrets.TANTE_PAY_URL }}' \
+           bash -s" << 'EOF'
+
+          set -e
+
+          cd /home/ubuntu/tantepay
+
+          echo "Stopping old container..."
+          sudo docker stop tantepay || true
+          sudo docker rm tantepay || true
+
+          echo "Loading new image..."
+          gunzip -c tantepay.tar.gz | sudo docker load
+
+          echo "Starting new container..."
+          sudo docker run -d \
+            --name tantepay \
+            --restart always \
+            -p 8085:8085 \
+            -e DB_URL="$DB_URL" \
+            -e DB_USERNAME="$DB_USERNAME" \
+            -e DB_PASSWORD="$DB_PASSWORD" \
+            -e RENT_MANAGER_BASE_URL="$RENT_MANAGER_BASE_URL" \
+            -e TANTE_PAY_URL="$TANTE_PAY_URL" \
+            tantepay:prod
+
+          EOF
+
+          rm private_key
