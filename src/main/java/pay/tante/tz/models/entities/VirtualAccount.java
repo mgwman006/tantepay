@@ -6,19 +6,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(
-  name = "virtual_accounts",
-  uniqueConstraints = {
-    @UniqueConstraint(name = "uk_virtual_account_user", columnNames = {"user_id"})
-  }
-)
+@Table(name = "virtual_accounts")
 public class VirtualAccount extends BaseEntity {
-  @Column(name = "user_id", nullable = false)
+  @Column(nullable = false)
   private Long userAccountId;
 
   @Column(nullable = false, precision = 12, scale = 2)
@@ -29,4 +26,7 @@ public class VirtualAccount extends BaseEntity {
 
   @Column(nullable = false)
   private boolean active = true;
+
+  @OneToMany(mappedBy = "virtualAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<VirtualAccountEntry> entries = new ArrayList<>();
 }

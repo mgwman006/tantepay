@@ -1,26 +1,28 @@
 package pay.tante.tz.models.dtos.responses;
 
+import jakarta.persistence.Column;
+import pay.tante.tz.enums.PaymentIntentStatus;
 import pay.tante.tz.enums.PaymentProvider;
-import pay.tante.tz.enums.PaymentPurpose;
+import pay.tante.tz.enums.TanteService;
+import pay.tante.tz.models.entities.BaseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record PaymentIntentDetailsDTO(
   Long id,
-  String reference,
-  String bookingReference,
-  Long userId,
+  Long userAccountId,
+  TanteService service,
+  String serviceReferenceNumber,
   BigDecimal amount,
   String currency,
-  PaymentProvider provider,
-  PaymentPurpose purpose,
+  String statusCallbackUrl,
+  String paymentLink,
   PaymentIntentStatus status,
-  String redirectUrl,
-  String providerTransactionId,
-  String failureReason,
-  boolean refunded,
+  LocalDateTime createdAt,
   LocalDateTime expiresAt,
-  LocalDateTime settledAt
-) {
+  LocalDateTime paidAt,
+  LocalDateTime refundedAt
+)
+{
 }

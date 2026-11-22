@@ -15,9 +15,6 @@ public class PaymentIntentExpiryScheduler {
 
   @Scheduled(fixedDelayString = "${tantepay.payment-intent.expiry-scan-ms:60000}")
   public void expireStaleIntents() {
-    int expired = paymentIntentService.expireStaleIntents();
-    if (expired > 0) {
-      LOGGER.info("Expired {} stale payment intents.", expired);
-    }
+
   }
 }

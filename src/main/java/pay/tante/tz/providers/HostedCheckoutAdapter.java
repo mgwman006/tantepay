@@ -26,7 +26,7 @@ public class HostedCheckoutAdapter implements PaymentProviderAdapter {
     String normalizedBase = checkoutBaseUrl.endsWith("/")
       ? checkoutBaseUrl.substring(0, checkoutBaseUrl.length() - 1)
       : checkoutBaseUrl;
-    return normalizedBase + "/" + encode(intent.getReference());
+    return normalizedBase + "/" + encode(intent.getId().toString()) + "?token=" + encode(intent.getServiceReferenceNumber());
   }
 
   private String encode(String value) {

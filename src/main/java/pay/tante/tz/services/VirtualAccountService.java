@@ -11,11 +11,13 @@ import pay.tante.tz.models.dtos.requests.VirtualAccountTransactionDTO;
 import pay.tante.tz.models.dtos.responses.VirtualAccountDetailsDTO;
 import pay.tante.tz.models.dtos.responses.VirtualAccountEntryDetailsDTO;
 import pay.tante.tz.models.entities.VirtualAccount;
+import pay.tante.tz.models.entities.VirtualAccountEntry;
 import pay.tante.tz.repositories.VirtualAccountEntryRepository;
 import pay.tante.tz.repositories.VirtualAccountRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -25,15 +27,15 @@ public class VirtualAccountService {
   private final VirtualAccountEntryRepository virtualAccountEntryRepository;
 
   @Transactional
-  public VirtualAccountDetailsDTO getOrCreateAccount(Long userId) {
-    if (userId == null) {
+  public VirtualAccountDetailsDTO getOrCreateAccount(Long userAccountId) {
+    if (userAccountId == null) {
       throw new TantePayException("User ID is required to resolve a virtual account.");
     }
 
-    VirtualAccount account = virtualAccountRepository.findByUserId(userId)
+    VirtualAccount account = virtualAccountRepository.findByUserAccountId(userAccountId)
       .orElseGet(() -> {
         VirtualAccount newAccount = new VirtualAccount();
-        newAccount.setUserId(userId);
+        newAccount.setUserAccountId(userAccountId);
         newAccount.setBalance(BigDecimal.ZERO);
         return virtualAccountRepository.save(newAccount);
       });
@@ -41,25 +43,22 @@ public class VirtualAccountService {
     return toAccountDetails(account);
   }
 
-  public VirtualAccountDetailsDTO getAccount(Long userId) {
-    return toAccountDetails(findAccount(userId));
+  public VirtualAccountDetailsDTO getAccount(Long userAccountId) {
+    VirtualAccount account = findAccount(userAccountId);
+    return toAccountDetails(account);
   }
 
-  public List<VirtualAccountEntryDetailsDTO> getEntries(Long userId) {
-    VirtualAccount account = findAccount(userId);
-    return virtualAccountEntryRepository.findByVirtualAccountIdOrderByEntryDateDesc(account.getId()).stream()
+  public List<VirtualAccountEntryDetailsDTO> getEntries(Long userAccountId) {
+    VirtualAccount account = findAccount(userAccountId);
+    return virtualAccountEntryRepository.findByVirtualAccountIdOrderByEntryDateDesc(account.getId())
+      .stream()
       .map(this::toEntryDetails)
       .toList();
   }
 
   @Transactional
-  public VirtualAccountDetailsDTO topUp(Long userId, VirtualAccountTransactionDTO request) {
-    return credit(userId, new VirtualAccountTransactionDTO(
-      request.amount(),
-      VirtualAccountEntryType.TOP_UP,
-      request.reference(),
-      request.description() != null ? request.description() : "Virtual account top up"
-    ));
+  public VirtualAccountDetailsDTO topUp(Long userAccountId, VirtualAccountTransactionDTO request) {
+    return credit(userAccountId, request);
   }
 
   @Transactional
@@ -89,7 +88,8 @@ public class VirtualAccountService {
   }
 
   @Transactional
-  public VirtualAccountDetailsDTO credit(Long userId, VirtualAccountTransactionDTO request) {
+  public VirtualAccountDetailsDTO credit(Long userAccountId, VirtualAccountTransactionDTO request)
+  {
     validateAmount(request.amount());
 
     VirtualAccountEntry existingEntry = findExistingEntry(request.reference());
@@ -97,8 +97,7 @@ public class VirtualAccountService {
       return toAccountDetails(existingEntry.getVirtualAccount());
     }
 
-    getOrCreateAccount(userId);
-    VirtualAccount account = lockAccount(userId);
+    VirtualAccount account = lockAccount(userAccountId);
     account.setBalance(account.getBalance().add(request.amount()));
     account = virtualAccountRepository.save(account);
     recordEntry(account, resolveType(request.type(), VirtualAccountEntryType.ADJUSTMENT), request.amount(), request.reference(), request.description());
@@ -116,14 +115,14 @@ public class VirtualAccountService {
     return virtualAccountEntryRepository.findByReference(reference).orElse(null);
   }
 
-  private VirtualAccount findAccount(Long userId) {
-    return virtualAccountRepository.findByUserId(userId)
-      .orElseThrow(() -> new ResourceNotFoundException("Virtual account for user " + userId + " not found."));
+  private VirtualAccount findAccount(Long userAccountId) {
+    return virtualAccountRepository.findByUserAccountId(userAccountId)
+      .orElseThrow(() -> new ResourceNotFoundException("Virtual account for user account " + userAccountId + " not found."));
   }
 
-  private VirtualAccount lockAccount(Long userId) {
-    return virtualAccountRepository.findByUserIdForUpdate(userId)
-      .orElseThrow(() -> new ResourceNotFoundException("Virtual account for user " + userId + " not found."));
+  private VirtualAccount lockAccount(Long userAccountId) {
+    return virtualAccountRepository.findByUserAccountIdForUpdate(userAccountId)
+      .orElseThrow(() -> new ResourceNotFoundException("Virtual account for user account " + userAccountId + " not found."));
   }
 
   private void validateAmount(BigDecimal amount) {
@@ -140,14 +139,14 @@ public class VirtualAccountService {
     entry.setBalanceAfter(account.getBalance());
     entry.setReference(reference);
     entry.setDescription(description);
-    entry.setEntryDate(LocalDateTime.now());
+    entry.setEntryDate(LocalDateTime.now(ZoneId.of("UTC")));
     virtualAccountEntryRepository.save(entry);
   }
 
   private VirtualAccountDetailsDTO toAccountDetails(VirtualAccount account) {
     return new VirtualAccountDetailsDTO(
       account.getId(),
-      account.getUserId(),
+      account.getUserAccountId(),
       account.getBalance(),
       account.getCurrency(),
       account.isActive()

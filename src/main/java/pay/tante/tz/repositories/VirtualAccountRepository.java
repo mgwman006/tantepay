@@ -12,9 +12,9 @@ import java.util.Optional;
 
 @Repository
 public interface VirtualAccountRepository extends JpaRepository<VirtualAccount, Long> {
-  Optional<VirtualAccount> findByUserId(Long userId);
+  Optional<VirtualAccount> findByUserAccountId(Long userAccountId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("select va from VirtualAccount va where va.userId = :userId")
-  Optional<VirtualAccount> findByUserIdForUpdate(@Param("userId") Long userId);
+  @Query("select va from VirtualAccount va where va.userAccountId = :userAccountId")
+  Optional<VirtualAccount> findByUserAccountIdForUpdate(@Param("userAccountId") Long userAccountId);
 }

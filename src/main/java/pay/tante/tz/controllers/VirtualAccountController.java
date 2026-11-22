@@ -26,9 +26,9 @@ public class VirtualAccountController {
       .body(ApiResponse.success(response, HttpStatus.CREATED.value()));
   }
 
-  @GetMapping("/{userId}")
-  public ResponseEntity<ApiResponse<VirtualAccountDetailsDTO>> getVirtualAccount(@PathVariable Long userId) {
-    VirtualAccountDetailsDTO response = virtualAccountService.getAccount(userId);
+  @GetMapping("/{userAccountId}")
+  public ResponseEntity<ApiResponse<VirtualAccountDetailsDTO>> getVirtualAccount(@PathVariable Long userAccountId) {
+    VirtualAccountDetailsDTO response = virtualAccountService.getAccount(userAccountId);
     return ResponseEntity.status(HttpStatus.OK)
       .body(ApiResponse.success(response, HttpStatus.OK.value()));
   }
