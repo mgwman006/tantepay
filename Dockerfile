@@ -13,7 +13,7 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY --from=builder /app/target/tante.tz-*.jar app.jar
+COPY --from=builder /app/target/tante-pay-*.jar app.jar
 
 EXPOSE 8085
 

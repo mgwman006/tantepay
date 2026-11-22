@@ -8,10 +8,10 @@
 		<version>3.5.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>pay</groupId>
-	<artifactId>tante.tz</artifactId>
+	<groupId>tz.tante</groupId>
+	<artifactId>tante-pay</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>tante.tz</name>
+	<name>tante-pay</name>
 	<description>This project is for payment</description>
 	<url/>
 	<licenses>
