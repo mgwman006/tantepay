@@ -5,11 +5,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+
 import pay.tante.tz.models.dtos.ApiResponse;
 import pay.tante.tz.models.dtos.requests.CreateGenericPaymentIntentDTO;
-import pay.tante.tz.models.dtos.requests.CreatePaymentIntentDTO;
-import pay.tante.tz.models.dtos.requests.PaymentCallbackDTO;
-import pay.tante.tz.models.dtos.requests.SelectPaymentProviderDTO;
 import pay.tante.tz.models.dtos.responses.PaymentIntentDetailsDTO;
 import pay.tante.tz.services.PaymentIntentService;
 
@@ -41,15 +40,5 @@ public class PaymentIntentController {
     return ResponseEntity.status(HttpStatus.OK)
       .body(ApiResponse.success(response, HttpStatus.OK.value()));
   }
-
-
-
-//  @PostMapping("/intents/callbacks")
-//  public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> handlePaymentCallback(@Valid @RequestBody PaymentCallbackDTO callback) {
-//    PaymentIntentDetailsDTO response = paymentIntentService.handleCallback(callback);
-//    return ResponseEntity.status(HttpStatus.OK)
-//      .body(ApiResponse.success(response, HttpStatus.OK.value()));
-//  }
-
 
 }

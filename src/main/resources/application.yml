@@ -31,7 +31,7 @@ server:
 
 tante:
     pay:
-        url: "${TANTE_PAY_URL:http://localhost:8085}"
+        url: "${TANTE_PAY_URL:http://localhost:4179}"
 
 rent:
   manager:
