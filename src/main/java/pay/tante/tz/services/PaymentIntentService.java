@@ -1,16 +1,16 @@
 package pay.tante.tz.services;
 
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Map;
 
-
-import pay.tante.tz.clients.RentManagerClient;
+import pay.tante.tz.enums.PaymentIntentStatus;
 import pay.tante.tz.enums.TanteService;
 import pay.tante.tz.enums.VirtualAccountEntryType;
 import pay.tante.tz.exceptions.ResourceNotFoundException;
@@ -24,25 +24,30 @@ import pay.tante.tz.repositories.PaymentIntentRepository;
 
 @Service
 public class PaymentIntentService {
+
+  /**
+   * Constants
+   */
+  private static final Logger LOGGER = LoggerFactory.getLogger(PaymentIntentService.class);
   private static final int DEFAULT_EXPIRY_MINUTES = 15;
 
+  /**
+   * Variables
+   */
   private final PaymentIntentRepository paymentIntentRepository;
   private final VirtualAccountService virtualAccountService;
-  private final RentManagerClient rentManagerClient;
   private final String tantePayUrl;
 
   public PaymentIntentService(
     @Value("${tante.pay.url}")
     String tantePayUrl,
     PaymentIntentRepository paymentIntentRepository,
-    VirtualAccountService virtualAccountService,
-    RentManagerClient rentManagerClient
+    VirtualAccountService virtualAccountService
   )
   {
     this.tantePayUrl = tantePayUrl;
     this.paymentIntentRepository = paymentIntentRepository;
     this.virtualAccountService = virtualAccountService;
-    this.rentManagerClient = rentManagerClient;
   }
 
   @Transactional
@@ -75,44 +80,45 @@ public class PaymentIntentService {
   public PaymentIntentDetailsDTO payWithVirtualAccount(String serviceReferenceNumber) {
     PaymentIntent intent = findIntentByServiceReferenceNumber(serviceReferenceNumber);
 
-    virtualAccountService.debit(intent.getUserAccountId(), new VirtualAccountTransactionDTO(
+    VirtualAccountTransactionDTO transaction = new VirtualAccountTransactionDTO(
       intent.getAmount(),
-      VirtualAccountEntryType.VIEWING_FEE_PAYMENT,
-      intent.getServiceReferenceNumber() + "-VA",
+      intent.getService() == TanteService.VIEWING_BOOKING ? VirtualAccountEntryType.VIEWING_FEE_PAYMENT : VirtualAccountEntryType.GENERIC_PAYMENT,
+      intent.getServiceReferenceNumber(),
       "Virtual account payment for " + intent.getService() + " with reference " + intent.getServiceReferenceNumber()
-    ));
+    );
+
+    virtualAccountService.debit(intent.getUserAccountId(), transaction);
 
     intent.setPaidAt(LocalDateTime.now(ZoneId.of("UTC")));
+    intent.setStatus(PaymentIntentStatus.PAID);
     intent = paymentIntentRepository.save(intent);
 
-    notifyCallingService(intent, "PAID", null);
+    notifyCallingService(intent);
     return toDetails(intent);
   }
 
-  private void notifyCallingService(PaymentIntent intent, String paymentStatus, String reason)
+  private void notifyCallingService(PaymentIntent intent)
   {
     if (StringUtils.hasText(intent.getCallbackUrl()))
     {
+      PaymentIntentDetailsDTO details = toDetails(intent);
       try
       {
         RestClient.create()
           .post()
           .uri(intent.getCallbackUrl())
-          .body(Map.of(
-            "reference", intent.getServiceReferenceNumber(),
-            "paymentStatus", paymentStatus,
-            "reason", reason != null ? reason : ""
-          ))
+          .body(details)
           .retrieve()
           .toBodilessEntity();
-      } catch (Exception ex) {
-        System.err.println("Failed to notify calling service: " + ex.getMessage());
+      }
+      catch (Exception ex)
+      {
+        LOGGER.error("Failed to notify calling service", ex);
       }
     }
-
-    if (intent.getService() == TanteService.VIEWING_BOOKING )
+    else
     {
-      rentManagerClient.updateViewingPaymentStatus(intent.getCallbackUrl(), paymentStatus, reason);
+      LOGGER.warn("No callback URL provided for payment intent {}", intent.getServiceReferenceNumber());
     }
   }
 

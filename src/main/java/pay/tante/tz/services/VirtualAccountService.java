@@ -64,7 +64,8 @@ public class VirtualAccountService {
   }
 
   @Transactional
-  public VirtualAccountDetailsDTO debit(Long userId, VirtualAccountTransactionDTO request) {
+  public VirtualAccountDetailsDTO debit(Long userAccountId, VirtualAccountTransactionDTO request)
+  {
     validateAmount(request.amount());
 
     VirtualAccountEntry existingEntry = findExistingEntry(request.reference());
@@ -72,9 +73,7 @@ public class VirtualAccountService {
       return toAccountDetails(existingEntry.getVirtualAccount());
     }
 
-    getOrCreateAccount(userId);
-    VirtualAccount account = lockAccount(userId);
-
+    VirtualAccount account = lockAccount(userAccountId);
     if (!account.isActive()) {
       throw new TantePayException("This virtual account is not active.");
     }

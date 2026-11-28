@@ -5,5 +5,6 @@ public enum VirtualAccountEntryType {
   VIEWING_FEE_PAYMENT,
   VIEWING_FEE_REFUND,
   PAYOUT,
-  ADJUSTMENT
+  ADJUSTMENT,
+  GENERIC_PAYMENT
 }

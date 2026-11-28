@@ -34,9 +34,9 @@ public class PaymentIntentController {
       .body(ApiResponse.success(response, HttpStatus.OK.value()));
   }
 
-  @PostMapping("/intents/{reference}/pay/virtual-account")
-  public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> payWithVirtualAccount(@PathVariable String reference) {
-    PaymentIntentDetailsDTO response = paymentIntentService.payWithVirtualAccount(reference);
+  @PostMapping("/intents/{serviceReferenceNumber}/pay/virtual-account")
+  public ResponseEntity<ApiResponse<PaymentIntentDetailsDTO>> payWithVirtualAccount(@PathVariable String serviceReferenceNumber) {
+    PaymentIntentDetailsDTO response = paymentIntentService.payWithVirtualAccount(serviceReferenceNumber);
     return ResponseEntity.status(HttpStatus.OK)
       .body(ApiResponse.success(response, HttpStatus.OK.value()));
   }
